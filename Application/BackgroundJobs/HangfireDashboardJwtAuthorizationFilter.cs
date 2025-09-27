@@ -69,6 +69,8 @@ namespace Application.BackgroundJobs
                 var jwtSecurityToken = (JwtSecurityToken)validatedToken;
 
                 //TODO: When permissions added, allow only admin permission to access hangfire dashboard.
+
+                return true;
             }
             catch
             {
