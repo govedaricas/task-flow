@@ -18,27 +18,27 @@ namespace Application.Interfaces.Implementations
             _jwtSettings = jwtSettings.Value;
         }
 
-        public string GenerateJWT(User user)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var userClaims = new[]
+            public string GenerateJWT(User user)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
-            };
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                var userClaims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Email, user.Email)
+                };
 
-            var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
-                claims: userClaims,
-                expires: DateTime.Now.AddMinutes(10),
-                signingCredentials: credentials
-                );
+                var token = new JwtSecurityToken(
+                    issuer: _jwtSettings.Issuer,
+                    audience: _jwtSettings.Audience,
+                    claims: userClaims,
+                    expires: DateTime.Now.AddMinutes(10),
+                    signingCredentials: credentials
+                    );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
 
         public string GenerateRefreshToken()
         {

@@ -1,10 +1,11 @@
-using Application.Exceptions;
+using Application.BackgroundJobs;
+using Application.Features.AuditLog;
 using Application.Interfaces;
 using Application.Interfaces.Implementations;
 using Application.Settings;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -45,6 +46,9 @@ builder.Services.AddAuthentication(options =>
 // DbContext
 builder.Services.AddDbContext<ITaskFlowDbContext, TaskFlowDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")));
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("SqlServerConnection")));
+builder.Services.AddHangfireServer();
 
 
 // Handlers & DI
@@ -59,7 +63,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserIdentity, UserIdentity>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
-
+builder.Services.AddScoped<AuditLogJobCommandHandler>();
+builder.Services.AddScoped<BackgroundJobHandler>();
+builder.Services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
 
 // Settings configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -101,7 +107,6 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
 
-
 var app = builder.Build();
 
 app.UseExceptionHandler(errorApp =>
@@ -117,7 +122,7 @@ app.UseExceptionHandler(errorApp =>
             await handler.TryHandleAsync(exception, CancellationToken.None);
         }
     });
-}); 
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -128,7 +133,21 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         options.RoutePrefix = string.Empty;
     });
+
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[]
+    {
+        app.Services.GetRequiredService<HangfireDashboardJwtAuthorizationFilter>()
+    }
+    });
     app.UseHsts();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var jobRegistrar = scope.ServiceProvider.GetRequiredService<BackgroundJobHandler>();
+    jobRegistrar.RegisterJobs();
 }
 
 app.UseHttpsRedirection();
