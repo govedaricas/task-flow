@@ -1,5 +1,6 @@
 using Application.BackgroundJobs;
 using Application.Features.AuditLog;
+using Application.Features.Auth.Login;
 using Application.Interfaces;
 using Application.Interfaces.Implementations;
 using Application.Settings;
@@ -53,7 +54,7 @@ builder.Services.AddHangfireServer();
 
 // Handlers & DI
 builder.Services.Scan(scan => scan
-    .FromApplicationDependencies()
+    .FromAssembliesOf(typeof(LoginCommandHandler))
     .AddClasses(classes => classes.InNamespaces("Application.Features"))
     .AsSelf()
     .WithScopedLifetime());
@@ -65,7 +66,7 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddScoped<AuditLogJobCommandHandler>();
 builder.Services.AddScoped<BackgroundJobHandler>();
-builder.Services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
+    builder.Services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
 
 // Settings configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
