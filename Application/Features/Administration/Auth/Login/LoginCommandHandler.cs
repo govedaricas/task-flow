@@ -3,7 +3,7 @@ using Application.Exceptions;
 using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Features.Auth.Login
+namespace Application.Features.Administration.Auth.Login
 {
     public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponseModel>
     {
@@ -21,6 +21,7 @@ namespace Application.Features.Auth.Login
         public async Task<LoginResponseModel> Handle (LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _dbContext.Users
+                .Include(x => x.Roles)
                 .Where(x => x.Username == request.Username)
                 .FirstOrDefaultAsync(cancellationToken);    
 

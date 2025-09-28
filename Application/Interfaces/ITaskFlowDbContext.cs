@@ -7,6 +7,7 @@ namespace Application.Interfaces
     {
         public DbSet<User> Users { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         public IUserIdentity? CurrentUser { get; set; }
 

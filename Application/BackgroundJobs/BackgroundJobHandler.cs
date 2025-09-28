@@ -1,4 +1,4 @@
-﻿using Application.Features.AuditLog;
+﻿using Application.Features.Administration.AuditLog;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 

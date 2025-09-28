@@ -22,14 +22,19 @@ namespace Application.Interfaces.Implementations
             {
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-                var userClaims = new[]
+                var userClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email)
                 };
 
-                var token = new JwtSecurityToken(
+                foreach (var role in user.Roles)
+                {
+                    userClaims.Add(new Claim(ClaimTypes.Role, role.Name));
+                }
+
+            var token = new JwtSecurityToken(
                     issuer: _jwtSettings.Issuer,
                     audience: _jwtSettings.Audience,
                     claims: userClaims,

@@ -1,6 +1,6 @@
 using Application.BackgroundJobs;
-using Application.Features.AuditLog;
-using Application.Features.Auth.Login;
+using Application.Features.Administration.AuditLog;
+using Application.Features.Administration.Auth.Login;
 using Application.Interfaces;
 using Application.Interfaces.Implementations;
 using Application.Settings;

@@ -1,6 +1,6 @@
 ﻿using Application.Abstraction;
 
-namespace Application.Features.Auth.Register
+namespace Application.Features.Administration.Auth.Register
 {
     public class RegisterUserCommand : IRequest<int>
     {

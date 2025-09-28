@@ -3,7 +3,7 @@ using Application.Exceptions;
 using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Features.Users.GetUserById
+namespace Application.Features.Administration.Users.GetUserById
 {
     public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserModel>
     {
@@ -24,7 +24,8 @@ namespace Application.Features.Users.GetUserById
                     FirstName = x.FirstName,
                     LastName = x.LastName,
                     Username = x.Username,
-                    IsActive = x.IsActive
+                    IsActive = x.IsActive,
+                    Roles = x.Roles.ToList()
                 })
                 .FirstOrDefaultAsync(x => x.Id == query.Id, cancellationToken)
                 ?? throw new NotFoundException("User", "User not Found");

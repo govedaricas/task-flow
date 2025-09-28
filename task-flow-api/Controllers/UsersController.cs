@@ -1,5 +1,5 @@
-﻿using Application.Features.Users.Commands;
-using Application.Features.Users.GetUserById;
+﻿using Application.Features.Administration.Users.Commands;
+using Application.Features.Administration.Users.GetUserById;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +26,7 @@ namespace task_flow_api.Controllers
             return result;
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut()]
         public async Task<bool> UpdateUser([FromBody] UpdateUserCommand command, CancellationToken cancellationToken)
         {

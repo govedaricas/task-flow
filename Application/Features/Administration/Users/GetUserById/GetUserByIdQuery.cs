@@ -1,6 +1,6 @@
 ﻿using Application.Abstraction;
 
-namespace Application.Features.Users.GetUserById
+namespace Application.Features.Administration.Users.GetUserById
 {
     public class GetUserByIdQuery : IRequest<UserModel>
     {

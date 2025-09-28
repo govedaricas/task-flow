@@ -1,6 +1,6 @@
 ﻿using Application.Abstraction;
 
-namespace Application.Features.Auth.Login
+namespace Application.Features.Administration.Auth.Login
 {
     public class LoginCommand : IRequest<LoginResponseModel>
     {

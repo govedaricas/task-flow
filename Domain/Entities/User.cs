@@ -11,5 +11,7 @@
         public byte[]? RefreshTokenHash { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
         public bool IsActive { get; set; }
+
+        public ICollection<Role> Roles { get; set; } = new List<Role>();
     }
 }

@@ -2,7 +2,7 @@
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Features.AuditLog
+namespace Application.Features.Administration.AuditLog
 {
     public class AuditLogJobCommandHandler
     {

@@ -12,6 +12,7 @@ namespace Persistance.Context
 
         public DbSet<User> Users { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         public IUserIdentity? CurrentUser { get; set; }
 
@@ -29,6 +30,15 @@ namespace Persistance.Context
                 entity.Property(x => x.LastName).IsRequired().HasMaxLength(20);
                 entity.Property(x => x.Email).IsRequired().HasMaxLength(100);
                 entity.Property(x => x.PasswordHash).IsRequired();
+                entity.HasMany(x => x.Roles).WithMany(x => x.Users).UsingEntity<Dictionary<string, object>>(  
+                    "UserRole",                             
+                    j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId"),
+                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId"),
+                    j =>
+                    {
+                        j.HasKey("UserId", "RoleId");       
+                        j.ToTable("UserRole", "Administration"); 
+                    });
             });
 
             modelBuilder.Entity<AuditLog>(entity =>
@@ -44,6 +54,14 @@ namespace Persistance.Context
                 entity.Property(e => e.OldValues).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.NewValues).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.Changes).HasColumnType("nvarchar(max)");
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("Role", "Administration");
+                entity.HasKey(u => u.Id).HasName("PK_Role");
+
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
             });
         }
 

@@ -1,8 +1,8 @@
-﻿using Application.Abstraction;
+﻿using Domain.Entities;
 
-namespace Application.Features.Users.Commands
+namespace Application.Features.Administration.Users.GetUserById
 {
-    public class UpdateUserCommand : IRequest<bool>
+    public class UserModel
     {
         public int Id { get; set; }
         public required string Username { get; set; }
@@ -10,5 +10,6 @@ namespace Application.Features.Users.Commands
         public required string LastName { get; set; }
         public required string Email { get; set; }
         public bool IsActive { get; set; }
+        public List<Role> Roles { get; set; }
     }
 }

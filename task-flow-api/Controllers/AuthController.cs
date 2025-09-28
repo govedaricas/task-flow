@@ -1,5 +1,5 @@
-﻿using Application.Features.Auth.Login;
-using Application.Features.Auth.Register;
+﻿using Application.Features.Administration.Auth.Login;
+using Application.Features.Administration.Auth.Register;
 using Microsoft.AspNetCore.Mvc;
 
 namespace task_flow_api.Controllers

@@ -1,4 +1,4 @@
-﻿namespace Application.Features.Auth.Login
+﻿namespace Application.Features.Administration.Auth.Login
 {
     public class LoginResponseModel
     {
