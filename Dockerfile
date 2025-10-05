@@ -10,7 +10,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # COPY solution and all csproj files first for proper restore
-COPY ["task-flow-api.sln", "."]
+COPY ["task-flow-api/task-flow-api.sln", "."]
 COPY ["Application/Application.csproj", "Application/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
 COPY ["Persistance/Persistance.csproj", "Persistance/"]
@@ -19,7 +19,7 @@ COPY ["task-flow-api/task-flow-api.csproj", "task-flow-api/"]
 # Restore dependencies
 RUN dotnet restore "task-flow-api/task-flow-api.csproj"
 
-# Copy everything else
+# Copy everything else from root
 COPY . .
 
 # Build the API project
@@ -32,6 +32,4 @@ RUN dotnet publish "task-flow-api/task-flow-api.csproj" -c $BUILD_CONFIGURATION 
 
 # Final runtime image
 FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "task-flow-api.dll"]
+WORKDIR /ap
