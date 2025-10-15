@@ -5,6 +5,9 @@
 
 # Hide sensitive settings
 *.secret.json
+appsettings.json
+appsettings.Development.json
+.env
 
 # dotenv files
 .env
