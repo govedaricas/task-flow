@@ -60,7 +60,15 @@ builder.Services.AddDbContext<ITaskFlowDbContext, TaskFlowDbContext>(options =>
     options.UseNpgsql(connString));
 
 builder.Services.AddHangfire(config =>
-    config.UsePostgreSqlStorage(connString));
+{
+    config.UsePostgreSqlStorage(
+        connString,
+        new PostgreSqlStorageOptions
+        {
+            PrepareSchemaIfNecessary = false, 
+            QueuePollInterval = TimeSpan.FromSeconds(15)
+        });
+});
 builder.Services.AddHangfireServer();
 
 // DI i ostalo...
