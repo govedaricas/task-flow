@@ -48,10 +48,10 @@ builder.Services.AddAuthentication(options =>
 });
 
 // DbContext
-var host = GetEnvOrConfig("POSTGRES_HOST", "ConnectionStrings:PostgresConnection").Split(':')[0];
-var port = GetEnvOrConfig("POSTGRES_PORT", "ConnectionStrings:PostgresConnection").Split(':')[1];
-var db = GetEnvOrConfig("POSTGRES_DB", "ConnectionStrings:PostgresConnection").Split(';')[0];
-var user = GetEnvOrConfig("POSTGRES_USER", "ConnectionStrings:PostgresConnection").Split(';')[0];
+var host = GetEnvOrConfig("POSTGRES_HOST", "ConnectionStrings:PostgresConnection");
+var port = GetEnvOrConfig("POSTGRES_PORT", "ConnectionStrings:PostgresConnection");
+var db = GetEnvOrConfig("POSTGRES_DB", "ConnectionStrings:PostgresConnection");
+var user = GetEnvOrConfig("POSTGRES_USER", "ConnectionStrings:PostgresConnection");
 var pass = GetEnvOrConfig("POSTGRES_PASSWORD", "ConnectionStrings:PostgresConnection");
 
 var connString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
@@ -133,21 +133,22 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    options.RoutePrefix = string.Empty;
+});
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { app.Services.GetRequiredService<HangfireDashboardJwtAuthorizationFilter>() }
+});
+
+app.UseHsts();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.RoutePrefix = string.Empty;
-    });
-
-    app.UseHangfireDashboard("/hangfire", new DashboardOptions
-    {
-        Authorization = new[] { app.Services.GetRequiredService<HangfireDashboardJwtAuthorizationFilter>() }
-    });
-
-    app.UseHsts();
 }
 
 using (var scope = app.Services.CreateScope())
