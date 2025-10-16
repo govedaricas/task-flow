@@ -5,6 +5,7 @@ using Application.Interfaces;
 using Application.Interfaces.Implementations;
 using Application.Settings;
 using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +17,17 @@ using System.Text;
 using task_flow_api.Identity;
 using task_flow_api.Middleware;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
+var configuration = builder.Configuration;
 
-// Add services to the container.
+string GetEnvOrConfig(string envVar, string configPath) =>
+    Environment.GetEnvironmentVariable(envVar) ?? configuration[configPath]!;
+
+// ---------- SERVICES ----------
 builder.Services.AddControllers();
 
-// Authentication & JWT
+// JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -36,23 +40,30 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = GetEnvOrConfig("JWT_ISSUER", "Jwt:Issuer"),
+        ValidAudience = GetEnvOrConfig("JWT_AUDIENCE", "Jwt:Audience"),
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!))
+            Encoding.UTF8.GetBytes(GetEnvOrConfig("JWT_SECRETKEY", "Jwt:SecretKey")))
     };
 });
 
-
 // DbContext
+var host = GetEnvOrConfig("POSTGRES_HOST", "ConnectionStrings:PostgresConnection").Split(':')[0];
+var port = GetEnvOrConfig("POSTGRES_PORT", "ConnectionStrings:PostgresConnection").Split(':')[1];
+var db = GetEnvOrConfig("POSTGRES_DB", "ConnectionStrings:PostgresConnection").Split(';')[0];
+var user = GetEnvOrConfig("POSTGRES_USER", "ConnectionStrings:PostgresConnection").Split(';')[0];
+var pass = GetEnvOrConfig("POSTGRES_PASSWORD", "ConnectionStrings:PostgresConnection");
+
+var connString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
+
 builder.Services.AddDbContext<ITaskFlowDbContext, TaskFlowDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")));
+    options.UseNpgsql(connString));
+
 builder.Services.AddHangfire(config =>
-    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("SqlServerConnection")));
+    config.UsePostgreSqlStorage(connString));
 builder.Services.AddHangfireServer();
 
-
-// Handlers & DI
+// DI i ostalo...
 builder.Services.Scan(scan => scan
     .FromAssembliesOf(typeof(LoginCommandHandler))
     .AddClasses(classes => classes.InNamespaces("Application.Features"))
@@ -66,19 +77,16 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddScoped<AuditLogJobCommandHandler>();
 builder.Services.AddScoped<BackgroundJobHandler>();
-    builder.Services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
+builder.Services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
 
-// Settings configuration
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+builder.Services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+builder.Services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
 
-
-//Adding swagger
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -88,7 +96,6 @@ builder.Services.AddSwaggerGen(c =>
         In = ParameterLocation.Header,
         Description = "Enter 'Bearer {token}' to authorize"
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -105,11 +112,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var app = builder.Build();
 
+// ---------- MIDDLEWARE ----------
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -125,11 +133,10 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
+    app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         options.RoutePrefix = string.Empty;
@@ -137,11 +144,9 @@ if (app.Environment.IsDevelopment())
 
     app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {
-        Authorization = new[]
-    {
-        app.Services.GetRequiredService<HangfireDashboardJwtAuthorizationFilter>()
-    }
+        Authorization = new[] { app.Services.GetRequiredService<HangfireDashboardJwtAuthorizationFilter>() }
     });
+
     app.UseHsts();
 }
 

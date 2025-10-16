@@ -15,10 +15,10 @@ namespace Persistance.Context
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 .Build();
 
-            var connectionString = "Server=DESKTOP-KQKTAKO\\SQLEXPRESS;Database=TaskFlow;User Id=sa;Password=Pa$$w0rd;TrustServerCertificate=True;";
+            var connectionString = "Host=localhost;Port=5432;Database=TaskFlow;Username=postgres;Password=Pa$$w0rd";
 
             var builder = new DbContextOptionsBuilder<TaskFlowDbContext>();
-            builder.UseSqlServer(connectionString);
+            builder.UseNpgsql(connectionString);
 
             return new TaskFlowDbContext(builder.Options);
         }

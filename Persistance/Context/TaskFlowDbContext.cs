@@ -30,15 +30,17 @@ namespace Persistance.Context
                 entity.Property(x => x.LastName).IsRequired().HasMaxLength(20);
                 entity.Property(x => x.Email).IsRequired().HasMaxLength(100);
                 entity.Property(x => x.PasswordHash).IsRequired();
-                entity.HasMany(x => x.Roles).WithMany(x => x.Users).UsingEntity<Dictionary<string, object>>(  
-                    "UserRole",                             
-                    j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId"),
-                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId"),
-                    j =>
-                    {
-                        j.HasKey("UserId", "RoleId");       
-                        j.ToTable("UserRole", "Administration"); 
-                    });
+
+                entity.HasMany(x => x.Roles).WithMany(x => x.Users)
+                    .UsingEntity<Dictionary<string, object>>(
+                        "UserRole",
+                        j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId"),
+                        j => j.HasOne<User>().WithMany().HasForeignKey("UserId"),
+                        j =>
+                        {
+                            j.HasKey("UserId", "RoleId");
+                            j.ToTable("UserRole", "Administration");
+                        });
             });
 
             modelBuilder.Entity<AuditLog>(entity =>
@@ -51,9 +53,11 @@ namespace Persistance.Context
                 entity.Property(e => e.EntityName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Timestamp).IsRequired();
-                entity.Property(e => e.OldValues).HasColumnType("nvarchar(max)");
-                entity.Property(e => e.NewValues).HasColumnType("nvarchar(max)");
-                entity.Property(e => e.Changes).HasColumnType("nvarchar(max)");
+
+                // PostgreSQL-friendly types
+                entity.Property(e => e.OldValues).HasColumnType("text");
+                entity.Property(e => e.NewValues).HasColumnType("text");
+                entity.Property(e => e.Changes).HasColumnType("text");
             });
 
             modelBuilder.Entity<Role>(entity =>
@@ -64,6 +68,7 @@ namespace Persistance.Context
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
             });
         }
+
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
