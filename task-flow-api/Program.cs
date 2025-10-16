@@ -19,6 +19,13 @@ using task_flow_api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------- CONFIGURATION ----------
+// Load appsettings and env variables
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+
 var configuration = builder.Configuration;
 
 string GetEnvOrConfig(string envVar, string configPath) =>
@@ -28,6 +35,15 @@ string GetEnvOrConfig(string envVar, string configPath) =>
 builder.Services.AddControllers();
 
 // JWT
+builder.Services.Configure<JwtSettings>(options =>
+{
+    configuration.GetSection("Jwt").Bind(options);
+
+    options.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? options.Issuer;
+    options.Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? options.Audience;
+    options.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRETKEY") ?? options.SecretKey;
+});
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -35,16 +51,30 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtSettings>>().Value;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidIssuer = GetEnvOrConfig("JWT_ISSUER", "Jwt:Issuer"),
-        ValidAudience = GetEnvOrConfig("JWT_AUDIENCE", "Jwt:Audience"),
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(GetEnvOrConfig("JWT_SECRETKEY", "Jwt:SecretKey")))
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
     };
+});
+
+// SMTP
+builder.Services.Configure<SmtpSettings>(options =>
+{
+    configuration.GetSection("Smtp").Bind(options);
+
+    options.Server = Environment.GetEnvironmentVariable("SMTP_SERVER") ?? options.Server;
+    options.Port = Environment.GetEnvironmentVariable("SMTP_PORT") ?? options.Port;
+    options.SenderName = Environment.GetEnvironmentVariable("SMTP_SENDERNAME") ?? options.SenderName;
+    options.SenderEmail = Environment.GetEnvironmentVariable("SMTP_SENDEREMAIL") ?? options.SenderEmail;
+    options.Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? options.Username;
+    options.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? options.Password;
 });
 
 // DbContext
@@ -59,19 +89,20 @@ var connString = $"Host={host};Port={port};Database={db};Username={user};Passwor
 builder.Services.AddDbContext<ITaskFlowDbContext, TaskFlowDbContext>(options =>
     options.UseNpgsql(connString));
 
+// Hangfire
 builder.Services.AddHangfire(config =>
 {
     config.UsePostgreSqlStorage(
         connString,
         new PostgreSqlStorageOptions
         {
-            PrepareSchemaIfNecessary = false, 
+            PrepareSchemaIfNecessary = false,
             QueuePollInterval = TimeSpan.FromSeconds(15)
         });
 });
 builder.Services.AddHangfireServer();
 
-// DI i ostalo...
+// DI
 builder.Services.Scan(scan => scan
     .FromAssembliesOf(typeof(LoginCommandHandler))
     .AddClasses(classes => classes.InNamespaces("Application.Features"))
@@ -87,10 +118,11 @@ builder.Services.AddScoped<AuditLogJobCommandHandler>();
 builder.Services.AddScoped<BackgroundJobHandler>();
 builder.Services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
 
-builder.Services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
-builder.Services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
+builder.Services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
 
-// Swagger
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// ---------- SWAGGER ----------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -119,9 +151,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
-builder.Services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var app = builder.Build();
 
@@ -153,22 +182,17 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = new[] { app.Services.GetRequiredService<HangfireDashboardJwtAuthorizationFilter>() }
 });
 
-app.UseHsts();
-
-if (app.Environment.IsDevelopment())
-{
-}
-
-using (var scope = app.Services.CreateScope())
-{
-    var jobRegistrar = scope.ServiceProvider.GetRequiredService<BackgroundJobHandler>();
-    jobRegistrar.RegisterJobs();
-}
-
 app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Register background jobs
+using (var scope = app.Services.CreateScope())
+{
+    var jobRegistrar = scope.ServiceProvider.GetRequiredService<BackgroundJobHandler>();
+    jobRegistrar.RegisterJobs();
+}
 
 app.Run();
