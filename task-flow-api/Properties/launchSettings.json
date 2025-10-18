@@ -3,7 +3,15 @@
     "http": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "POSTGRES_HOST": "dpg-d3ofjcodl3ps73buu21g-a.frankfurt-postgres.render.com",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DB": "taskflow_tgzk",
+        "POSTGRES_USER": "taskflow_tgzk_user",
+        "POSTGRES_PASSWORD": "IBMzN6B7u3hOW2TdOHmwZ7zm7w4d48ZK",
+        "JWT_ISSUER": "taskflow-api",
+        "JWT_AUDIENCE": "taskflow-client",
+        "JWT_SECRETKEY": "aKd83jFhLzqP9s3yBnW6XpG7VzRjL2XmH5tW4CvF7Ds9JcX2NrQ8TyH6MzKb9VhP"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5171"
@@ -11,7 +19,15 @@
     "https": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "POSTGRES_HOST": "dpg-d3ofjcodl3ps73buu21g-a.frankfurt-postgres.render.com",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DB": "taskflow_tgzk",
+        "POSTGRES_USER": "taskflow_tgzk_user",
+        "POSTGRES_PASSWORD": "IBMzN6B7u3hOW2TdOHmwZ7zm7w4d48ZK",
+        "JWT_ISSUER": "taskflow-api",
+        "JWT_AUDIENCE": "taskflow-client",
+        "JWT_SECRETKEY": "aKd83jFhLzqP9s3yBnW6XpG7VzRjL2XmH5tW4CvF7Ds9JcX2NrQ8TyH6MzKb9VhP"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7004;http://localhost:5171"
@@ -20,7 +36,15 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "POSTGRES_HOST": "dpg-d3ofjcodl3ps73buu21g-a.frankfurt-postgres.render.com",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DB": "taskflow_tgzk",
+        "POSTGRES_USER": "taskflow_tgzk_user",
+        "POSTGRES_PASSWORD": "IBMzN6B7u3hOW2TdOHmwZ7zm7w4d48ZK",
+        "JWT_ISSUER": "taskflow-api",
+        "JWT_AUDIENCE": "taskflow-client",
+        "JWT_SECRETKEY": "aKd83jFhLzqP9s3yBnW6XpG7VzRjL2XmH5tW4CvF7Ds9JcX2NrQ8TyH6MzKb9VhP"
       }
     },
     "Container (Dockerfile)": {
@@ -28,7 +52,15 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "environmentVariables": {
         "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_HTTP_PORTS": "8080",
+        "POSTGRES_HOST": "dpg-d3ofjcodl3ps73buu21g-a.frankfurt-postgres.render.com",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DB": "taskflow_tgzk",
+        "POSTGRES_USER": "taskflow_tgzk_user",
+        "POSTGRES_PASSWORD": "IBMzN6B7u3hOW2TdOHmwZ7zm7w4d48ZK",
+        "JWT_ISSUER": "taskflow-api",
+        "JWT_AUDIENCE": "taskflow-client",
+        "JWT_SECRETKEY": "aKd83jFhLzqP9s3yBnW6XpG7VzRjL2XmH5tW4CvF7Ds9JcX2NrQ8TyH6MzKb9VhP"
       },
       "publishAllPorts": true,
       "useSSL": true

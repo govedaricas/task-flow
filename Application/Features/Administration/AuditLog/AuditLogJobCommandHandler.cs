@@ -19,7 +19,7 @@ namespace Application.Features.Administration.AuditLog
 
         public async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.Now;
 
             var logs = _dbContext.AuditLogs
                 .Where(x => x.Timestamp >= today.AddDays(-1) && x.Timestamp < today)

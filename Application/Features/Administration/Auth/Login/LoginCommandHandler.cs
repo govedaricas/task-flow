@@ -42,12 +42,6 @@ namespace Application.Features.Administration.Auth.Login
             user.RefreshTokenHash = refreshTokenHash;
             user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
 
-            _dbContext.CurrentUser = new UserIdentityDto
-            {
-                Id = user.Id,
-                Username = user.Username
-            };
-
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return new LoginResponseModel{
@@ -56,12 +50,6 @@ namespace Application.Features.Administration.Auth.Login
                 Token = accessToken,
                 RefreshToken = refreshToken
             };
-        }
-
-        public class UserIdentityDto : IUserIdentity
-        {
-            public int? Id { get; set; }
-            public string? Username { get; set; }
         }
     }
 }

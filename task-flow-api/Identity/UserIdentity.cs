@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using Application.Exceptions;
 using Application.Interfaces;
 
 namespace task_flow_api.Identity
@@ -13,11 +12,24 @@ namespace task_flow_api.Identity
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public int? Id => int.TryParse(_httpContextAccessor.HttpContext?
-            .User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? 
-                id : throw new ConflictException("Context", "User context is unavaliable.");
+        public int? Id
+        {
+            get
+            {
+                var value = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(value, out var id))
+                    return id;
 
-        public string? Username => _httpContextAccessor.HttpContext?
-            .User?.Identity?.Name ?? throw new ConflictException("Context", "User context is unavaliable.");
+                return null; 
+            }
+        }
+
+        public string? Username
+        {
+            get
+            {
+                return _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            }
+        }
     }
 }
