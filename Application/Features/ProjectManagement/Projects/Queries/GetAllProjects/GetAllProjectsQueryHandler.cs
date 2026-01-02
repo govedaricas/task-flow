@@ -1,20 +1,24 @@
 ﻿using Application.Abstraction;
+using Application.Extensions;
 using Application.Features.ProjectManagement.Projects.Queries.GetProjectById;
 using Application.Interfaces;
+using Application.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.ProjectManagement.Projects.Queries.GetAllProjects
 {
-    public class GetAllProjectsQueryHandler : IRequestHandler<GetAllProjectsQuery, List<ProjectModel>>
+    public class GetAllProjectsQueryHandler : IRequestHandler<GetAllProjectsQuery, PagedData<ProjectModel>>
     {
         private readonly ITaskFlowDbContext _dbContext;
+        private readonly IUserIdentity _userIdentity;
 
-        public GetAllProjectsQueryHandler(ITaskFlowDbContext dbContext)
+        public GetAllProjectsQueryHandler(ITaskFlowDbContext dbContext, IUserIdentity userIdentity)
         {
             _dbContext = dbContext;
+            _userIdentity = userIdentity;
         }
 
-        public async Task<List<ProjectModel>> Handle(GetAllProjectsQuery request, CancellationToken cancellationToken)
+        public async Task<PagedData<ProjectModel>> Handle(GetAllProjectsQuery request, CancellationToken cancellationToken)
         {
             return await _dbContext.Projects
                 .Select(p => new ProjectModel
@@ -26,7 +30,9 @@ namespace Application.Features.ProjectManagement.Projects.Queries.GetAllProjects
                     CreatedById = p.CreatedById,
                     IsActive = p.IsActive
                 })
-                .ToListAsync(cancellationToken);
+                .ApplySearchFilter(request)
+                .ApplySortFilter(request)
+                .ApplyPagedDataAsync(request.PageNumber, request.PageSize, cancellationToken);
         }
     }
 }

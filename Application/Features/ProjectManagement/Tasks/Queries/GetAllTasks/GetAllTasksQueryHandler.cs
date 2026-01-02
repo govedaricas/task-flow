@@ -7,15 +7,18 @@ namespace Application.Features.ProjectManagement.Tasks.Queries.GetAllTasks
     public class GetAllTasksQueryHandler : IRequestHandler<GetAllTasksQuery, List<TaskModel>>
     {
         private readonly ITaskFlowDbContext _dbContext;
+        private readonly IUserIdentity _userIdentity;
 
-        public GetAllTasksQueryHandler(ITaskFlowDbContext dbContext)
+        public GetAllTasksQueryHandler(ITaskFlowDbContext dbContext, IUserIdentity userIdentity)
         {
             _dbContext = dbContext;
+            _userIdentity = userIdentity;
         }
 
         public async Task<List<TaskModel>> Handle(GetAllTasksQuery request, CancellationToken cancellationToken)
         {
             return await _dbContext.Tasks
+                .Where(x => x.Project.Members.Any(y => y.UserId == _userIdentity.Id))
                 .Select(t => new TaskModel
                 {
                     Id = t.Id,

@@ -3,6 +3,7 @@ using Application.Features.ProjectManagement.Projects.Commands.DeleteProject;
 using Application.Features.ProjectManagement.Projects.Commands.UpdateProject;
 using Application.Features.ProjectManagement.Projects.Queries.GetAllProjects;
 using Application.Features.ProjectManagement.Projects.Queries.GetProjectById;
+using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,10 +36,10 @@ namespace task_flow_api.Controllers
         }
 
         [Authorize]
-        [HttpGet]
-        public async Task<List<ProjectModel>> GetAllProjects(CancellationToken cancellationToken)
+        [HttpPost("search")]
+        public async Task<PagedData<ProjectModel>> GetAllProjects([FromBody]GetAllProjectsQuery query, CancellationToken cancellationToken)
         {
-            return await _getAllProjectsQueryHandler.Handle(new GetAllProjectsQuery(), cancellationToken);
+            return await _getAllProjectsQueryHandler.Handle(query, cancellationToken);
         }
 
         [Authorize(Roles = "Admin,ProjectManager")]
