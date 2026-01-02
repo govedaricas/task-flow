@@ -13,5 +13,8 @@
         public bool IsActive { get; set; }
 
         public ICollection<Role> Roles { get; set; } = new List<Role>();
+        public ICollection<ProjectMember> ProjectMembers { get; set; } = new List<ProjectMember>();
+        public ICollection<Task> CreatedTasks { get; set; } = new List<Task>();
+        public ICollection<Task> AssignedTasks { get; set; } = new List<Task>();
     }
 }

@@ -12,7 +12,7 @@ namespace task_flow_api.Identity
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public int? Id
+        public int Id
         {
             get
             {
@@ -20,7 +20,7 @@ namespace task_flow_api.Identity
                 if (int.TryParse(value, out var id))
                     return id;
 
-                return null; 
+                return 0; 
             }
         }
 

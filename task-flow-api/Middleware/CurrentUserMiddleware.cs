@@ -13,7 +13,7 @@ namespace task_flow_api.Middleware
 
         public async Task InvokeAsync(HttpContext context, ITaskFlowDbContext dbContext, IUserIdentity userIdentity)
         {
-            if (userIdentity.Id.HasValue)
+            if (userIdentity.Id != 0)
             {
                 dbContext.CurrentUser = userIdentity; 
             }

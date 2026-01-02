@@ -13,6 +13,13 @@ namespace Persistance.Context
         public DbSet<User> Users { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectMember> ProjectMembers { get; set; }
+        public DbSet<Domain.Entities.Task> Tasks { get; set; }
+        public DbSet<TaskPriority> TaskPriorities { get; set; }
+        public DbSet<Domain.Entities.TaskStatus> TaskStatuses { get; set; }
+
 
         public IUserIdentity? CurrentUser { get; set; }
 
@@ -54,7 +61,6 @@ namespace Persistance.Context
                 entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Timestamp).IsRequired();
 
-                // PostgreSQL-friendly types
                 entity.Property(e => e.OldValues).HasColumnType("text");
                 entity.Property(e => e.NewValues).HasColumnType("text");
                 entity.Property(e => e.Changes).HasColumnType("text");
@@ -67,12 +73,144 @@ namespace Persistance.Context
 
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
             });
+
+            modelBuilder.Entity<Project>(entity =>
+            {
+                entity.ToTable("Project", "ProjectManagement");
+                entity.HasKey(p => p.Id).HasName("PK_Project");
+
+                entity.Property(p => p.Code).IsRequired().HasMaxLength(10);
+                entity.Property(p => p.Name).IsRequired().HasMaxLength(100);
+                entity.Property(p => p.Description).HasMaxLength(500);
+                entity.Property(p => p.CreatedById).IsRequired();
+                entity.Property(p => p.CreatedAt).IsRequired();
+                entity.Property(p => p.IsActive).IsRequired();
+
+                entity.HasOne(p => p.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(p => p.CreatedById)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Project_CreatedBy_User");
+
+                entity.HasMany(p => p.Tasks)
+                    .WithOne(t => t.Project)
+                    .HasForeignKey(t => t.ProjectId)
+                    .HasConstraintName("FK_Task_Project");
+
+                entity.HasMany(p => p.Members)
+                    .WithOne(m => m.Project)
+                    .HasForeignKey(m => m.ProjectId)
+                    .HasConstraintName("FK_ProjectMember_Project");
+            });
+
+            modelBuilder.Entity<ProjectMember>(entity =>
+            {
+                entity.ToTable("ProjectMember", "ProjectManagement");
+                entity.HasKey(pm => pm.Id).HasName("PK_ProjectMember");
+
+                entity.Property(pm => pm.ProjectId).IsRequired();
+                entity.Property(pm => pm.UserId).IsRequired();
+
+                entity.HasOne(pm => pm.Project)
+                    .WithMany(p => p.Members)
+                    .HasForeignKey(pm => pm.ProjectId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_ProjectMember_Project");
+
+                entity.HasOne(pm => pm.User)
+                    .WithMany(u => u.ProjectMembers)
+                    .HasForeignKey(pm => pm.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_ProjectMember_User");
+
+                entity.HasIndex(pm => new { pm.ProjectId, pm.UserId }).IsUnique()
+                    .HasDatabaseName("UQ_ProjectMember_ProjectId_UserId");
+            });
+
+            modelBuilder.Entity<Domain.Entities.Task>(entity =>
+            {
+                entity.ToTable("Task", "ProjectManagement");
+                entity.HasKey(t => t.Id).HasName("PK_Task");
+
+                entity.Property(t => t.Name).IsRequired().HasMaxLength(100);
+                entity.Property(t => t.Description).HasMaxLength(1000);
+                entity.Property(t => t.ProjectId).IsRequired();
+                entity.Property(t => t.TaskStatusId).IsRequired();
+                entity.Property(t => t.TaskPriorityId).IsRequired();
+                entity.Property(t => t.CreatedByUserId).IsRequired();
+                entity.Property(t => t.CreatedAt).IsRequired();
+                entity.Property(t => t.DueDate);
+                entity.Property(t => t.IsActive).IsRequired();
+
+                entity.HasOne(t => t.Project)
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(t => t.ProjectId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_Task_Project");
+
+                entity.HasOne(t => t.CreatedByUser)
+                    .WithMany(u => u.CreatedTasks)
+                    .HasForeignKey(t => t.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Task_CreatedByUser");
+
+                entity.HasOne(t => t.AssignedUser)
+                    .WithMany(u => u.AssignedTasks)
+                    .HasForeignKey(t => t.AssignedUserId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Task_AssignedUser");
+
+                entity.HasOne(t => t.TaskStatus)
+                    .WithMany(ts => ts.Tasks)
+                    .HasForeignKey(t => t.TaskStatusId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Task_TaskStatus");
+            });
+
+            modelBuilder.Entity<Domain.Entities.TaskStatus>(entity =>
+            {
+                entity.ToTable("TaskStatus", "BasicCatalog");
+                entity.HasKey(ts => ts.Id).HasName("PK_TaskStatus");
+
+                entity.Property(ts => ts.Name).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity.ToTable("Comment", "ProjectManagement");
+                entity.HasKey(c => c.Id).HasName("PK_Comment");
+
+                entity.Property(c => c.Text).IsRequired().HasMaxLength(1000);
+                entity.Property(c => c.CreatedAt).IsRequired();
+                entity.Property(c => c.TaskId).IsRequired();
+                entity.Property(c => c.AuthorId).IsRequired();
+
+                entity.HasOne(c => c.Task)
+                    .WithMany(t => t.Comments)
+                    .HasForeignKey(c => c.TaskId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_Comment_Task");
+
+                entity.HasOne(c => c.Author)
+                    .WithMany()
+                    .HasForeignKey(c => c.AuthorId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Comment_Author_User");
+            });
+
+            modelBuilder.Entity<TaskPriority>(entity =>
+            {
+                entity.ToTable("TaskPriority", "BasicCatalog");
+                entity.HasKey(tp => tp.Id).HasName("PK_TaskPriority");
+
+                entity.Property(tp => tp.Name).IsRequired().HasMaxLength(50);
+            });
         }
 
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            var userId = CurrentUser?.Id?.ToString() ?? "0";
+            var userId = CurrentUser?.Id.ToString() ?? "0";
 
             var modifiedEntities = ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Added

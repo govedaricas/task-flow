@@ -1,4 +1,4 @@
-using Application.BackgroundJobs;
+﻿using Application.BackgroundJobs;
 using Application.Settings;
 using DotNetEnv;
 using Hangfire;
@@ -87,6 +87,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SignalRCors", policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetIsOriginAllowed(_ => true); 
+    });
+});
+
 var app = builder.Build();
 
 // ---------- MIDDLEWARE ----------
@@ -118,12 +130,12 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
-
 
 // ---------- Register background jobs ----------
 using (var scope = app.Services.CreateScope())
