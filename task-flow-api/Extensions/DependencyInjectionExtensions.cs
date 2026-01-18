@@ -4,6 +4,7 @@ using Application.Features.Administration.Auth.Login;
 using Application.Interfaces;
 using Application.Interfaces.Implementations;
 using Persistance.Helpers;
+using Persistance.Services;
 using task_flow_api.Identity;
 using task_flow_api.Middleware;
 
@@ -28,6 +29,7 @@ namespace task_flow_api.Extensions
             services.AddScoped<BackgroundJobHandler>();
             services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
             services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
+            services.AddScoped<ITaskNotificationService, SignalRTaskNotificationService>();
 
             return services;
         }

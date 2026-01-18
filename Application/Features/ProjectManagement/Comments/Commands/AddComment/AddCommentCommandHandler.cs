@@ -1,11 +1,12 @@
 ﻿using Application.Abstraction;
 using Application.Exceptions;
 using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.ProjectManagement.Comments.Commands.AddComment
 {
-    public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, int>
+    public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Comment>
     {
         private readonly ITaskFlowDbContext _dbContext;
         private readonly IUserIdentity _userIdentity;
@@ -16,7 +17,7 @@ namespace Application.Features.ProjectManagement.Comments.Commands.AddComment
             _userIdentity = userIdentity;
         }
 
-        public async Task<int> Handle(AddCommentCommand request, CancellationToken cancellationToken)
+        public async Task<Comment> Handle(AddCommentCommand request, CancellationToken cancellationToken)
         {
             var taskExists = await _dbContext.Tasks
                 .AnyAsync(x => x.Id == request.TaskId, cancellationToken);
@@ -35,7 +36,7 @@ namespace Application.Features.ProjectManagement.Comments.Commands.AddComment
             _dbContext.Comments.Add(comment);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return comment.Id;
+            return comment;
         }
     }
 }

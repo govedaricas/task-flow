@@ -2,7 +2,7 @@
 
 namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
 {
-    public class ChangeTaskStatusCommand : IRequest<int>
+    public class ChangeTaskStatusCommand : IRequest<Domain.Entities.Task>
     {
         public int Id { get; set; }
         public byte TaskStatusId { get; set; }
