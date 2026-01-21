@@ -13,5 +13,7 @@
         public User CreatedBy { get; set; }
         public ICollection<Task> Tasks { get; set; } = new List<Task>();
         public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
+
+        public ICollection<ProjectStatistics> ProjectStatistics { get; set; } = new List<ProjectStatistics>();
     }
 }

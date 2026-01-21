@@ -14,6 +14,7 @@ namespace Application.Interfaces
         public DbSet<Domain.Entities.Task> Tasks { get; set; }
         public DbSet<TaskPriority> TaskPriorities { get; set; }
         public DbSet<Domain.Entities.TaskStatus> TaskStatuses { get; set; }
+        public DbSet<ProjectStatistics> ProjectStatistics { get; set; }
 
         public IUserIdentity? CurrentUser { get; set; }
 

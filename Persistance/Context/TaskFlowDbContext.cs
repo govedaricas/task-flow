@@ -19,6 +19,7 @@ namespace Persistance.Context
         public DbSet<Domain.Entities.Task> Tasks { get; set; }
         public DbSet<TaskPriority> TaskPriorities { get; set; }
         public DbSet<Domain.Entities.TaskStatus> TaskStatuses { get; set; }
+        public DbSet<ProjectStatistics> ProjectStatistics { get; set; }
 
 
         public IUserIdentity? CurrentUser { get; set; }
@@ -101,6 +102,11 @@ namespace Persistance.Context
                     .WithOne(m => m.Project)
                     .HasForeignKey(m => m.ProjectId)
                     .HasConstraintName("FK_ProjectMember_Project");
+
+                entity.HasMany(p => p.ProjectStatistics)
+                    .WithOne(m => m.Project)
+                    .HasForeignKey(m => m.ProjectId)
+                    .HasConstraintName("FK_ProjectStatistics_Project");
             });
 
             modelBuilder.Entity<ProjectMember>(entity =>
@@ -196,6 +202,19 @@ namespace Persistance.Context
                     .HasForeignKey(c => c.AuthorId)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_Comment_Author_User");
+            });
+
+            modelBuilder.Entity<ProjectStatistics>(entity =>
+            {
+                entity.ToTable("ProjectStatistics", "ProjectManagement");
+
+                entity.HasKey(c => c.ProjectId).HasName("PK_ProjectStatistics");
+
+                entity.HasOne(c => c.Project)
+                    .WithMany(t => t.ProjectStatistics)
+                    .HasForeignKey(c => c.ProjectId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_ProjectStatistics_Project");
             });
 
             modelBuilder.Entity<TaskPriority>(entity =>

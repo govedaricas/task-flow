@@ -42,6 +42,16 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.AddTask
                 IsActive = request.IsActive
             };
 
+            var projectStatistics = await _dbContext.ProjectStatistics
+                .FirstOrDefaultAsync(x => x.ProjectId == task.ProjectId, cancellationToken);
+
+            if (projectStatistics != null)
+            {
+                projectStatistics.TodoCount++;
+                projectStatistics.LastActivityAt = DateTime.UtcNow;
+                projectStatistics.IsOverloaded = (projectStatistics.TodoCount + projectStatistics.InProgressCount) > 100;
+            }
+
             _dbContext.Tasks.Add(task);
             await _dbContext.SaveChangesAsync(cancellationToken);
 

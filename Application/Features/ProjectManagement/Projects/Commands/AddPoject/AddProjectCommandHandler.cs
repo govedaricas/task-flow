@@ -37,7 +37,18 @@ namespace Application.Features.ProjectManagement.Projects.Commands.AddPoject
                 IsActive = true
             };
 
+            var projectStatistics = new Domain.Entities.ProjectStatistics
+            {
+                DoneCount = 0,
+                InProgressCount = 0,
+                TodoCount = 0,
+                IsOverloaded = false,
+                LastActivityAt = DateTime.UtcNow,
+                Project = project
+            };
+
             _dbContext.Projects.Add(project);
+            _dbContext.ProjectStatistics.Add(projectStatistics);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return project.Id;
