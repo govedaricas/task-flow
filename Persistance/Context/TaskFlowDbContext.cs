@@ -229,29 +229,33 @@ namespace Persistance.Context
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            var userId = CurrentUser?.Id.ToString() ?? "0";
+            var userId = CurrentUser?.Id;
 
-            var modifiedEntities = ChangeTracker.Entries()
+            // Ako nema autentificiranog korisnika, preskoči audit
+            if (userId.HasValue && userId.Value != 0)
+            {
+                var modifiedEntities = ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Added
                          || e.State == EntityState.Modified
                          || e.State == EntityState.Deleted)
                 .ToList();
 
-            foreach (var modifiedEntity in modifiedEntities)
-            {
-                var auditLog = new AuditLog
+                foreach (var modifiedEntity in modifiedEntities)
                 {
-                    UserId = int.Parse(userId),
-                    EntityId = GetEntityId(modifiedEntity),
-                    EntityName = modifiedEntity.Entity.GetType().Name,
-                    Action = modifiedEntity.State.ToString(),
-                    Timestamp = DateTime.UtcNow,
-                    OldValues = GetChanges(modifiedEntity, oldOnly: true),
-                    NewValues = GetChanges(modifiedEntity, newOnly: true),
-                    Changes = GetChanges(modifiedEntity)
-                };
+                    var auditLog = new AuditLog
+                    {
+                        UserId = userId.Value,
+                        EntityId = GetEntityId(modifiedEntity),
+                        EntityName = modifiedEntity.Entity.GetType().Name,
+                        Action = modifiedEntity.State.ToString(),
+                        Timestamp = DateTime.UtcNow,
+                        OldValues = GetChanges(modifiedEntity, oldOnly: true),
+                        NewValues = GetChanges(modifiedEntity, newOnly: true),
+                        Changes = GetChanges(modifiedEntity)
+                    };
 
-                AuditLogs.Add(auditLog);
+                    AuditLogs.Add(auditLog);
+                }
             }
 
             return await base.SaveChangesAsync(cancellationToken);

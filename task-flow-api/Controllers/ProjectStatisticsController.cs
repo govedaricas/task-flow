@@ -1,4 +1,5 @@
 ﻿using Application.Features.ProjectManagement.ProjectStatistics.Queries.GetProjectStatistics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace task_flow_api.Controllers
@@ -14,6 +15,7 @@ namespace task_flow_api.Controllers
             _getProjectStatisticsQueryHandler = getProjectStatisticsQueryHandler;
         }
 
+        [Authorize()]
         [HttpGet("{projectId}/statistics")]
         public async Task<ProjectStatisticsModel> GetStatistics(int projectId, CancellationToken cancellationToken)
         {

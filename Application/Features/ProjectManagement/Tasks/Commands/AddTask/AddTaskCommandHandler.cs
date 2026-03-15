@@ -3,6 +3,7 @@ using Application.Enums;
 using Application.Exceptions;
 using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Application.Features.ProjectManagement.Tasks.Commands.AddTask
 {
@@ -10,11 +11,13 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.AddTask
     {
         private readonly ITaskFlowDbContext _dbContext;
         private readonly IUserIdentity _userIdentity;
+        private readonly ICacheService _cacheService;
 
-        public AddTaskCommandHandler(ITaskFlowDbContext dbContext, IUserIdentity userIdentity)
+        public AddTaskCommandHandler(ITaskFlowDbContext dbContext, IUserIdentity userIdentity, ICacheService cacheService)
         {
             _dbContext = dbContext;
             _userIdentity = userIdentity;
+            _cacheService = cacheService;
         }
 
         public async Task<int> Handle(AddTaskCommand request, CancellationToken cancellationToken)
@@ -26,7 +29,6 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.AddTask
             {
                 throw new NotFoundException("Project", "Project not found.");
             }
-
 
             var task = new Domain.Entities.Task
             {
@@ -50,6 +52,13 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.AddTask
                 projectStatistics.TodoCount++;
                 projectStatistics.LastActivityAt = DateTime.UtcNow;
                 projectStatistics.IsOverloaded = (projectStatistics.TodoCount + projectStatistics.InProgressCount) > 100;
+
+                var cacheOptions = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                };
+
+                await _cacheService.SetAsync($"project:{request.ProjectId}:statistics", projectStatistics, cacheOptions, cancellationToken);
             }
 
             _dbContext.Tasks.Add(task);

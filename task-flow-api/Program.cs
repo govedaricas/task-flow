@@ -7,15 +7,16 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Persistance.Hubs;
+using Persistance.Services;
+using System.Security.Claims;
 using System.Text;
 using task_flow_api.Extensions;
-using task_flow_api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------- CONFIGURATION ----------
-
-Env.Load();
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+Env.Load(envPath);
 
 // Load appsettings and env variables
 builder.Configuration
@@ -30,7 +31,8 @@ builder.Services.AddControllers();
 builder.Services
     .ConfigureJwtSettings(builder.Configuration)
     .ConfigureSmtpSettings(builder.Configuration)
-    .AddDatabase(builder.Configuration)          
+    .AddDatabase(builder.Configuration)     
+    .AddInfastructureService(builder.Configuration)
     .AddApplicationServices();                   
 
 // JWT Authentication
@@ -42,7 +44,7 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     var jwtSettings = builder.Services.BuildServiceProvider()
-        .GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtSettings>>().Value;
+           .GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtSettings>>().Value;
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -51,7 +53,9 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+        NameClaimType = ClaimTypes.Name,
+        RoleClaimType = ClaimTypes.Role
     };
 
     options.Events = new JwtBearerEvents
@@ -65,6 +69,16 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Token = accessToken;
             }
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("Auth failed: " + context.Exception.Message);
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("Token valid!");
             return Task.CompletedTask;
         }
     };
@@ -150,7 +164,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("SignalRCors");
 app.UseAuthentication();
-app.UseMiddleware<CurrentUserMiddleware>();
+//app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<TaskHub>("/hubs/task");

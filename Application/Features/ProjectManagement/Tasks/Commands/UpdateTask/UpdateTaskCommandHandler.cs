@@ -8,12 +8,10 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.UpdateTask
     public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, bool>
     {
         private readonly ITaskFlowDbContext _dbContext;
-        private readonly IUserIdentity _userIdentity;
 
-        public UpdateTaskCommandHandler(ITaskFlowDbContext dbContext, IUserIdentity userIdentity)
+        public UpdateTaskCommandHandler(ITaskFlowDbContext dbContext)
         {
             _dbContext = dbContext;
-            _userIdentity = userIdentity;
         }
 
         public async Task<bool> Handle(UpdateTaskCommand request, CancellationToken cancellationToken)

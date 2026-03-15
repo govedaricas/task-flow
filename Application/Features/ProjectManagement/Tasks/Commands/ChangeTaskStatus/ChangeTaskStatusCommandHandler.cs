@@ -3,16 +3,19 @@ using Application.Enums;
 using Application.Exceptions;
 using Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
 {
     public class ChangeTaskStatusCommandHandler : IRequestHandler<ChangeTaskStatusCommand, Domain.Entities.Task>
     {
         private readonly ITaskFlowDbContext _dbContext;
+        private readonly ICacheService _cacheService;
 
-        public ChangeTaskStatusCommandHandler(ITaskFlowDbContext dbContext)
+        public ChangeTaskStatusCommandHandler(ITaskFlowDbContext dbContext, ICacheService cacheService)
         {
             _dbContext = dbContext;
+            _cacheService = cacheService;
         }
 
         public async Task<Domain.Entities.Task> Handle(ChangeTaskStatusCommand request, CancellationToken cancellationToken)
@@ -87,6 +90,13 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
 
             projectStatistics.LastActivityAt = DateTime.UtcNow;
             projectStatistics.IsOverloaded = (projectStatistics.TodoCount + projectStatistics.InProgressCount) > 100;
+
+            var cacheOptions = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+            };
+
+            await _cacheService.SetAsync($"project:{task.ProjectId}:statistics", projectStatistics, cacheOptions, cancellationToken);
         }
     }
 }
