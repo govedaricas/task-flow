@@ -34,7 +34,7 @@ builder.Services
     .ConfigureSmtpSettings(builder.Configuration)
     .AddDatabase(builder.Configuration)     
     .AddInfastructureService(builder.Configuration)
-    .AddApplicationServices();                   
+    .AddApplicationServices(builder.Configuration);                   
 
 // JWT Authentication
 builder.Services.AddAuthentication(options =>

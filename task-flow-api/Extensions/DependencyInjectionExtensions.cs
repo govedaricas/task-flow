@@ -3,6 +3,8 @@ using Application.Features.Administration.AuditLog;
 using Application.Features.Administration.Auth.Login;
 using Application.Interfaces;
 using Application.Interfaces.Implementations;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Persistance.Helpers;
 using Persistance.Services;
 using task_flow_api.Identity;
@@ -12,7 +14,7 @@ namespace task_flow_api.Extensions
 {
     public static class DependencyInjectionExtensions
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.Scan(scan => scan
                 .FromAssembliesOf(typeof(LoginCommandHandler))
@@ -30,6 +32,11 @@ namespace task_flow_api.Extensions
             services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
             services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
             services.AddScoped<ITaskNotificationService, SignalRTaskNotificationService>();
+
+            services.AddHangfire(config => config
+            .UsePostgreSqlStorage(c => c
+                .UseNpgsqlConnection(configuration.GetConnectionString("DefaultConnection"))));
+            services.AddHangfireServer();
 
             return services;
         }
