@@ -129,7 +129,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddStackExchangeRedis(builder.Configuration["Redis:Configuration"]);
 
 var app = builder.Build();
 
