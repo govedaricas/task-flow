@@ -23,8 +23,10 @@ namespace task_flow_api.Extensions
 
             var connString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
 
-            services.AddDbContext<ITaskFlowDbContext, TaskFlowDbContext>(options =>
+            services.AddDbContext<TaskFlowDbContext>(options =>
                 options.UseNpgsql(connString));
+
+            services.AddScoped<ITaskFlowDbContext>(sp => sp.GetRequiredService<TaskFlowDbContext>());
 
             // Hangfire
             services.AddHangfire(config =>
@@ -33,7 +35,7 @@ namespace task_flow_api.Extensions
                     connString,
                     new PostgreSqlStorageOptions
                     {
-                        PrepareSchemaIfNecessary = false,
+                        PrepareSchemaIfNecessary = true,
                         QueuePollInterval = TimeSpan.FromSeconds(15)
                     });
             });

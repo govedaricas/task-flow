@@ -61,7 +61,7 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.AddTask
                 await _cacheService.SetAsync($"project:{request.ProjectId}:statistics", projectStatistics, cacheOptions, cancellationToken);
             }
 
-            _dbContext.Tasks.Add(task);
+            await _dbContext.Tasks.AddAsync(task, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return task.Id;

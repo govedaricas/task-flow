@@ -38,5 +38,17 @@ namespace Persistance.Services
                 Timestamp = DateTime.UtcNow
             });
         }
+
+        public async Task NotifyProjectStatisticsChanged(int projectId, object stats, List<int> userIds)
+        {
+            var groups = userIds.Select(id => $"user_{id}").ToList();
+
+            await _hubContext.Clients.Groups(groups).SendAsync("ProjectStatisticsChanged", new
+            {
+                ProjectId = projectId,
+                Stats = stats,
+                Timestamp = DateTime.UtcNow
+            });
+        }
     }
 }

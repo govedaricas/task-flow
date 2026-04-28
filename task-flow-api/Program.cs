@@ -11,6 +11,7 @@ using Persistance.Services;
 using System.Security.Claims;
 using System.Text;
 using task_flow_api.Extensions;
+using task_flow_api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -164,7 +165,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("SignalRCors");
 app.UseAuthentication();
-//app.UseMiddleware<CurrentUserMiddleware>();
+app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<TaskHub>("/hubs/task");

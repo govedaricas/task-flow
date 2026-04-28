@@ -3,6 +3,7 @@ using Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus;
 using Application.Features.ProjectManagement.Tasks.Commands.DeleteTask;
 using Application.Features.ProjectManagement.Tasks.Commands.UpdateTask;
 using Application.Features.ProjectManagement.Tasks.Queries.GetAllTasks;
+using Application.Features.ProjectManagement.Tasks.Queries.GetTaskAuditLogs;
 using Application.Features.ProjectManagement.Tasks.Queries.GetTaskById;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,10 +22,11 @@ namespace task_flow_api.Controllers
         private readonly GetAllTasksQueryHandler _getAllTasksQueryHandler;
         private readonly DeleteTaskCommandHandler _deleteTaskCommandHandler;
         private readonly ChangeTaskStatusCommandHandler _changeTaskStatusCommandHandler;
+        private readonly GetTaskAuditLogsQueryHandler _getTaskAuditLogsQueryHandler;
         private readonly ITaskNotificationService _notificationService;
         private readonly ITaskFlowDbContext _dbContext;
 
-        public TasksController(AddTaskCommandHandler addTaskCommandHandler, UpdateTaskCommandHandler updateTaskCommandHandler, GetTaskByIdQueryHandler getTaskByIdQueryHandler, GetAllTasksQueryHandler getAllTasksQueryHandler, DeleteTaskCommandHandler deleteTaskCommandHandler, ChangeTaskStatusCommandHandler changeTaskStatusCommandHandler, ITaskNotificationService notificationService, ITaskFlowDbContext dbContext)
+        public TasksController(AddTaskCommandHandler addTaskCommandHandler, UpdateTaskCommandHandler updateTaskCommandHandler, GetTaskByIdQueryHandler getTaskByIdQueryHandler, GetAllTasksQueryHandler getAllTasksQueryHandler, DeleteTaskCommandHandler deleteTaskCommandHandler, ChangeTaskStatusCommandHandler changeTaskStatusCommandHandler, GetTaskAuditLogsQueryHandler getTaskAuditLogsQueryHandler, ITaskNotificationService notificationService, ITaskFlowDbContext dbContext)
         {
             _addTaskCommandHandler = addTaskCommandHandler;
             _updateTaskCommandHandler = updateTaskCommandHandler;
@@ -32,6 +34,7 @@ namespace task_flow_api.Controllers
             _getAllTasksQueryHandler = getAllTasksQueryHandler;
             _deleteTaskCommandHandler = deleteTaskCommandHandler;
             _changeTaskStatusCommandHandler = changeTaskStatusCommandHandler;
+            _getTaskAuditLogsQueryHandler = getTaskAuditLogsQueryHandler;
             _notificationService = notificationService;
             _dbContext = dbContext;
         }
@@ -86,6 +89,13 @@ namespace task_flow_api.Controllers
             await _notificationService.NotifyTaskStatusChanged(id, command.TaskStatusId.ToString(), task.Name, userIds);
 
             return Ok(task);
+        }
+
+        [HttpGet("{taskId}/audit-logs")]
+        [Authorize]
+        public async Task<List<TaskAuditModel>> GetAuditLogs(int taskId, CancellationToken cancellationToken)
+        {
+            return await _getTaskAuditLogsQueryHandler.Handle(new GetTaskAuditLogsQuery { TaskId = taskId }, cancellationToken);
         }
     }
 }
