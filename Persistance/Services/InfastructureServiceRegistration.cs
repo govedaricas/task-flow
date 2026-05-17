@@ -11,8 +11,9 @@ namespace Persistance.Services
         {
             services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = configuration["Redis:Configuration"];
-                options.InstanceName = configuration["Redis:InstanceName"];
+                options.Configuration = Environment.GetEnvironmentVariable("REDIS_CONFIGURATION")?? configuration["Redis:Configuration"];
+
+                options.InstanceName = Environment.GetEnvironmentVariable("REDIS_INSTANCE_NAME") ?? configuration["Redis:InstanceName"];
             });
 
             services.AddScoped<ICacheService, CacheService>();
