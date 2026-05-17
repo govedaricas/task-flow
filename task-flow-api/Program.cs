@@ -19,6 +19,9 @@ var builder = WebApplication.CreateBuilder(args);
 var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 Env.Load(envPath);
 
+var redisConfig = Environment.GetEnvironmentVariable("REDIS_CONFIGURATION")
+    ?? builder.Configuration["Redis:Configuration"];
+
 // Load appsettings and env variables
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -130,7 +133,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR()
-    .AddStackExchangeRedis(builder.Configuration["Redis:Configuration"]);
+    .AddStackExchangeRedis(redisConfig);
 
 var app = builder.Build();
 
