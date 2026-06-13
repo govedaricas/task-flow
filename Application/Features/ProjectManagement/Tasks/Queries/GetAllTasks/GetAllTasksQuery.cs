@@ -1,9 +1,15 @@
 ﻿using Application.Abstraction;
+using Application.Models;
+using Application.Paginations;
 
 namespace Application.Features.ProjectManagement.Tasks.Queries.GetAllTasks
 {
-    public class GetAllTasksQuery : IRequest<List<TaskModel>>
+    public class GetAllTasksQuery : DataFilter, IRequest<PagedData<TaskModel>>
     {
+        public string? Name { get; set; }
+        public byte? TaskStatusId { get; set; }
+        public byte? TaskPriorityId { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 
     public class TaskModel

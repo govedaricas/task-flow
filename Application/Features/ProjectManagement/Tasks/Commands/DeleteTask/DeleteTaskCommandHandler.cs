@@ -37,12 +37,19 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.DeleteTask
                         break;
 
                     case TaskStatusEnum.InProgress:
-                    case TaskStatusEnum.OnHold:
                         projectStatistics.InProgressCount--;
                         break;
 
+                    case TaskStatusEnum.OnHold:
+                        projectStatistics.OnHoldCount--;
+                        break;
+
                     case TaskStatusEnum.Completed:
-                        projectStatistics.DoneCount--;
+                        projectStatistics.CompletedCount--;
+                        break;
+
+                    case TaskStatusEnum.Cancelled:
+                        projectStatistics.CancelledCount--;
                         break;
                 }
 

@@ -3,7 +3,6 @@ using Application.Extensions;
 using Application.Features.ProjectManagement.Projects.Queries.GetProjectById;
 using Application.Interfaces;
 using Application.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.ProjectManagement.Projects.Queries.GetAllProjects
 {

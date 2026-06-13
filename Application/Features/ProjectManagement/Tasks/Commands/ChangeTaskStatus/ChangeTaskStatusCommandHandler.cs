@@ -77,12 +77,19 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
                     break;
 
                 case TaskStatusEnum.InProgress:
-                case TaskStatusEnum.OnHold:
                     projectStatistics.InProgressCount--;
                     break;
 
+                case TaskStatusEnum.OnHold:
+                    projectStatistics.OnHoldCount--;
+                    break;
+
                 case TaskStatusEnum.Completed:
-                    projectStatistics.DoneCount--;
+                    projectStatistics.CompletedCount--;
+                    break;
+
+                case TaskStatusEnum.Cancelled:
+                    projectStatistics.CancelledCount--;
                     break;
             }
 
@@ -94,12 +101,19 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
                     break;
 
                 case TaskStatusEnum.InProgress:
-                case TaskStatusEnum.OnHold:
                     projectStatistics.InProgressCount++;
                     break;
 
+                case TaskStatusEnum.OnHold:
+                    projectStatistics.OnHoldCount++;
+                    break;
+
                 case TaskStatusEnum.Completed:
-                    projectStatistics.DoneCount++;
+                    projectStatistics.CompletedCount++;
+                    break;
+
+                case TaskStatusEnum.Cancelled:
+                    projectStatistics.CancelledCount++;
                     break;
             }
 
@@ -115,7 +129,9 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
             {
                 TodoCount = projectStatistics.TodoCount,
                 InProgressCount = projectStatistics.InProgressCount,
-                DoneCount = projectStatistics.DoneCount,
+                CompletedCount = projectStatistics.CompletedCount,
+                OnHoldCount = projectStatistics.OnHoldCount,
+                CancelledCount = projectStatistics.CancelledCount,
                 LastActivityAt = projectStatistics.LastActivityAt,
                 IsOverloaded = projectStatistics.IsOverloaded
             }, cacheOptions, cancellationToken);
@@ -124,7 +140,9 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
             {
                 TodoCount = projectStatistics.TodoCount,
                 InProgressCount = projectStatistics.InProgressCount,
-                DoneCount = projectStatistics.DoneCount,
+                CompletedCount = projectStatistics.CompletedCount,
+                CancelledCount = projectStatistics.CancelledCount,
+                OnHoldCount = projectStatistics.OnHoldCount,
                 LastActivityAt = projectStatistics.LastActivityAt
             };
         }
@@ -132,9 +150,11 @@ namespace Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus
 
     public record ProjectStatsDto
     {
-        public int TodoCount { get; init; }
-        public int InProgressCount { get; init; }
-        public int DoneCount { get; init; }
+        public int TodoCount { get; set; }
+        public int InProgressCount { get; set; }
+        public int OnHoldCount { get; set; }
+        public int CompletedCount { get; set; }
+        public int CancelledCount { get; set; }
         public DateTime LastActivityAt { get; init; }
     }
 }

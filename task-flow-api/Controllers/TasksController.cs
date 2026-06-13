@@ -6,6 +6,7 @@ using Application.Features.ProjectManagement.Tasks.Queries.GetAllTasks;
 using Application.Features.ProjectManagement.Tasks.Queries.GetTaskAuditLogs;
 using Application.Features.ProjectManagement.Tasks.Queries.GetTaskById;
 using Application.Interfaces;
+using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,11 +47,11 @@ namespace task_flow_api.Controllers
             return await _getTaskByIdQueryHandler.Handle(new GetTaskByIdQuery { Id = id }, cancellationToken);
         }
 
-        [HttpGet]
+        [HttpPost("search")]
         [Authorize]
-        public async Task<List<TaskModel>> GetAllTasks(CancellationToken cancellationToken)
+        public async Task<PagedData<TaskModel>> GetAllTasks([FromBody] GetAllTasksQuery query, CancellationToken cancellationToken)
         {
-            return await _getAllTasksQueryHandler.Handle(new GetAllTasksQuery(), cancellationToken);
+            return await _getAllTasksQueryHandler.Handle(query, cancellationToken);
         }
 
         [HttpPost]

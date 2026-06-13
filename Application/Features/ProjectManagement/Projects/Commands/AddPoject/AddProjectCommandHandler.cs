@@ -39,9 +39,11 @@ namespace Application.Features.ProjectManagement.Projects.Commands.AddPoject
 
             var projectStatistics = new Domain.Entities.ProjectStatistics
             {
-                DoneCount = 0,
+                CompletedCount = 0,
                 InProgressCount = 0,
                 TodoCount = 0,
+                CancelledCount = 0,
+                OnHoldCount = 0,
                 IsOverloaded = false,
                 LastActivityAt = DateTime.UtcNow,
                 Project = project

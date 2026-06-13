@@ -33,10 +33,12 @@ namespace Application.Features.ProjectManagement.ProjectStatistics.Queries.GetPr
                 .Where(x => x.ProjectId ==  request.ProjectId && x.Project.Members.Any(y => y.UserId == _userIdentity.Id))
                 .Select(x => new ProjectStatisticsModel
                 {
-                    DoneCount = x.DoneCount,
                     InProgressCount = x.InProgressCount,
                     TodoCount = x.TodoCount,
                     LastActivityAt = x.LastActivityAt,
+                    OnHoldCount = x.OnHoldCount,
+                    CancelledCount = x.CancelledCount,
+                    CompletedCount = x.CompletedCount,
                     IsOverloaded = x.IsOverloaded
                 })
                 .FirstOrDefaultAsync(cancellationToken);

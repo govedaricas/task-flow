@@ -3,6 +3,7 @@ using Application.Features.ProjectManagement.Comments.Commands.DeleteComment;
 using Application.Features.ProjectManagement.Comments.Commands.UpdateComment;
 using Application.Features.ProjectManagement.Comments.Queries.GetAllComments;
 using Application.Interfaces;
+using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,11 +33,11 @@ namespace task_flow_api.Controllers
             _notificationService = notificationService;
         }
 
-        [HttpGet]
+        [HttpPost("search")]
         [Authorize(Roles = "Admin,ProjectManager")]
-        public async Task<List<CommentModel>> GetAll([FromQuery] int taskId, CancellationToken cancellationToken)
+        public async Task<PagedData<CommentModel>> GetAll([FromQuery] GetAllCommentsQuery query, CancellationToken cancellationToken)
         {
-            return await _getAllCommentsQueryHandler.Handle(new GetAllCommentsQuery { TaskId = taskId }, cancellationToken);
+            return await _getAllCommentsQueryHandler.Handle(query, cancellationToken);
         }
 
         [HttpPost]

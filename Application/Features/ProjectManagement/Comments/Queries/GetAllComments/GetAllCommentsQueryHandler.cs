@@ -1,10 +1,11 @@
 ﻿using Application.Abstraction;
+using Application.Extensions;
 using Application.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Application.Models;
 
 namespace Application.Features.ProjectManagement.Comments.Queries.GetAllComments
 {
-    public class GetAllCommentsQueryHandler : IRequestHandler<GetAllCommentsQuery, List<CommentModel>>
+    public class GetAllCommentsQueryHandler : IRequestHandler<GetAllCommentsQuery, PagedData<CommentModel>>
     {
         private readonly ITaskFlowDbContext _dbContext;
 
@@ -13,7 +14,7 @@ namespace Application.Features.ProjectManagement.Comments.Queries.GetAllComments
             _dbContext = dbContext;
         }
 
-        public async Task<List<CommentModel>> Handle(GetAllCommentsQuery request, CancellationToken cancellationToken)
+        public async Task<PagedData<CommentModel>> Handle(GetAllCommentsQuery request, CancellationToken cancellationToken)
         {
             return await _dbContext.Comments
                 .Where(x => x.TaskId == request.TaskId)
@@ -27,7 +28,9 @@ namespace Application.Features.ProjectManagement.Comments.Queries.GetAllComments
                     AuthorId = c.AuthorId,
                     AuthorName = c.Author.FirstName + " " + c.Author.LastName
                 })
-                .ToListAsync(cancellationToken);
+                .ApplySearchFilter(request)
+                .ApplySortFilter(request)
+                .ApplyPagedDataAsync(request.PageNumber, request.PageSize, cancellationToken);
         }
     }
 }
