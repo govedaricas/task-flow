@@ -12,9 +12,12 @@ namespace Application.Features.ProjectManagement.Projects.Commands.UpdateProject
                 .NotEmpty()
                 .MaximumLength(100);
 
+            RuleFor(x => x.Id)
+                .GreaterThan(0).WithMessage("Id must be a positive number.");
+
             RuleFor(x => x.Description)
-                .NotEmpty()
-                .MaximumLength(500);
+                .MaximumLength(500)
+                .When(x => x.Description != null);
         }
     }
 }

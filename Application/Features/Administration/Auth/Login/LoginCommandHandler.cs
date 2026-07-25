@@ -40,7 +40,7 @@ namespace Application.Features.Administration.Auth.Login
             var refreshTokenHash = _tokenService.HashToken(refreshToken);
 
             user.RefreshTokenHash = refreshTokenHash;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 

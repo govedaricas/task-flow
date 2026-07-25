@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
+using Serilog.Context;
 
 namespace task_flow_api.Middleware
 {
@@ -15,10 +16,17 @@ namespace task_flow_api.Middleware
         {
             if (userIdentity.Id != 0)
             {
-                dbContext.CurrentUser = userIdentity; 
+                dbContext.CurrentUser = userIdentity;
             }
 
-            await _next(context);
+            var requestId = context.TraceIdentifier;
+            var userId = userIdentity.Id != 0 ? userIdentity.Id.ToString() : "anonymous";
+
+            using (LogContext.PushProperty("UserId", userId))
+            using (LogContext.PushProperty("RequestId", requestId))
+            {
+                await _next(context);
+            }
         }
     }
 }

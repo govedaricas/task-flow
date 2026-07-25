@@ -28,7 +28,7 @@ namespace Application.Features.ProjectManagement.Comments.Commands.AddComment
             var comment = new Domain.Entities.Comment
             {
                 Text = request.Text.Trim(),
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 TaskId = request.TaskId,
                 AuthorId = _userIdentity.Id
             };

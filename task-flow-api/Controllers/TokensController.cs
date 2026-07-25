@@ -36,7 +36,7 @@ namespace task_flow_api.Controllers
             var user = await _dbContext.Users
                 .FirstOrDefaultAsync(x => x.Username == username, cancellationToken);  
 
-            if (user is null || user.RefreshTokenHash == null || user.RefreshTokenExpiryTime <= DateTime.Now)
+            if (user is null || user.RefreshTokenHash == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 return BadRequest("Invalid client request");
 
             if (!user.RefreshTokenHash.SequenceEqual(incomingHash))

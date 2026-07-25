@@ -1,19 +1,20 @@
 using FluentValidation;
 
-namespace Application.Features.Administration.Users.Commands
+namespace Application.Features.Administration.Auth.Register
 {
-    internal class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
+    internal class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
     {
-        public UpdateUserCommandValidator()
+        public RegisterUserCommandValidator()
         {
             ClassLevelCascadeMode = CascadeMode.Stop;
-
-            RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Id must be a positive number.");
 
             RuleFor(x => x.Username)
                 .NotEmpty()
                 .MaximumLength(10);
+
+            RuleFor(x => x.Password)
+                .NotEmpty()
+                .MinimumLength(8).WithMessage("Password must be at least 8 characters.");
 
             RuleFor(x => x.FirstName)
                 .NotEmpty()
@@ -27,11 +28,6 @@ namespace Application.Features.Administration.Users.Commands
                 .NotEmpty()
                 .EmailAddress()
                 .MaximumLength(100);
-
-            RuleFor(x => x.RoleIds)
-                .NotNull()
-                .Must(ids => ids.All(id => id > 0)).WithMessage("All RoleIds must be positive numbers.")
-                .When(x => x.RoleIds.Any());
         }
     }
 }

@@ -68,9 +68,11 @@ namespace Application.BackgroundJobs
                 tokenHandler.ValidateToken(jwtToken, validationParameters, out SecurityToken validatedToken);
                 var jwtSecurityToken = (JwtSecurityToken)validatedToken;
 
-                //TODO: When permissions added, allow only admin permission to access hangfire dashboard.
+                var roles = jwtSecurityToken.Claims
+                    .Where(c => c.Type == ClaimTypes.Role)
+                    .Select(c => c.Value);
 
-                return true;
+                return roles.Contains("Admin");
             }
             catch
             {

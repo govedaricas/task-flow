@@ -38,7 +38,7 @@ namespace Application.Interfaces.Implementations
                     issuer: _jwtSettings.Issuer,
                     audience: _jwtSettings.Audience,
                     claims: userClaims,
-                    expires: DateTime.Now.AddMinutes(10),
+                    expires: DateTime.UtcNow.AddMinutes(10),
                     signingCredentials: credentials
                     );
 

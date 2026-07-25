@@ -2,6 +2,7 @@
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Persistance.Context;
 
 namespace task_flow_api.Extensions
@@ -22,6 +23,22 @@ namespace task_flow_api.Extensions
                 ?? throw new InvalidOperationException("POSTGRES_PASSWORD not set in environment");
 
             var connString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
+
+            var redisConfig = Environment.GetEnvironmentVariable("REDIS_CONFIGURATION")
+                ?? config["Redis:Configuration"]
+                ?? throw new InvalidOperationException("REDIS_CONFIGURATION not set in environment");
+
+            services.AddHealthChecks()
+                .AddNpgSql(
+                    connectionString: connString,
+                    name: "postgresql",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: ["ready"])
+                .AddRedis(
+                    redisConnectionString: redisConfig,
+                    name: "redis",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: ["ready"]);
 
             services.AddDbContext<TaskFlowDbContext>(options =>
                 options.UseNpgsql(connString));

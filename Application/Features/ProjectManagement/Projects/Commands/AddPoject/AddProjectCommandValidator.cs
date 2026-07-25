@@ -17,8 +17,8 @@ namespace Application.Features.ProjectManagement.Projects.Commands.AddPoject
                 .MaximumLength(10);
 
             RuleFor(x => x.Description)
-                .NotEmpty()
-                .MaximumLength(500);
+                .MaximumLength(500)
+                .When(x => x.Description != null);
         }
     }
 }

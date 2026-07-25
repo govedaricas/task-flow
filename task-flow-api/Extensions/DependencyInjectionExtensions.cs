@@ -3,8 +3,11 @@ using Application.Features.Administration.AuditLog;
 using Application.Features.Administration.Auth.Login;
 using Application.Interfaces;
 using Application.Interfaces.Implementations;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Persistance.Helpers;
 using Persistance.Services;
+using task_flow_api.Filters;
 using task_flow_api.Identity;
 using task_flow_api.Middleware;
 
@@ -20,6 +23,9 @@ namespace task_flow_api.Extensions
                 .AsSelf()
                 .WithScopedLifetime());
 
+            services.AddValidatorsFromAssemblyContaining<LoginCommandHandler>();
+            services.AddFluentValidationAutoValidation();
+
             services.AddHttpContextAccessor();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserIdentity, UserIdentity>();
@@ -30,6 +36,7 @@ namespace task_flow_api.Extensions
             services.AddSingleton<HangfireDashboardJwtAuthorizationFilter>();
             services.AddSingleton<Application.Exceptions.IExceptionHandler, GlobalExceptionHandler>();
             services.AddScoped<ITaskNotificationService, SignalRTaskNotificationService>();
+            services.AddScoped<LoggingActionFilter>();
 
             return services;
         }
