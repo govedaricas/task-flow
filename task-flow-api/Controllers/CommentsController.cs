@@ -1,4 +1,5 @@
 ﻿using Application.Features.ProjectManagement.Comments.Commands.AddComment;
+using Application.Enums;
 using Application.Features.ProjectManagement.Comments.Commands.DeleteComment;
 using Application.Features.ProjectManagement.Comments.Commands.UpdateComment;
 using Application.Features.ProjectManagement.Comments.Queries.GetAllComments;
@@ -34,14 +35,14 @@ namespace task_flow_api.Controllers
         }
 
         [HttpPost("search")]
-        [Authorize(Roles = "Admin,ProjectManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.ProjectManager))]
         public async Task<PagedData<CommentModel>> GetAll([FromQuery] GetAllCommentsQuery query, CancellationToken cancellationToken)
         {
             return await _getAllCommentsQueryHandler.Handle(query, cancellationToken);
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,ProjectManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.ProjectManager))]
         public async Task<int> AddComment([FromBody] AddCommentCommand command, CancellationToken cancellationToken)
         {
             var comment = await _addCommentCommandHandler.Handle(command, cancellationToken);
@@ -53,14 +54,14 @@ namespace task_flow_api.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Admin,ProjectManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.ProjectManager))]
         public async Task<bool> UpdateComment([FromBody] UpdateCommentCommand command, CancellationToken cancellationToken)
         {
             return await _updateCommentCommandHandler.Handle(command, cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,ProjectManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.ProjectManager))]
         public async Task<bool> DeleteComment(int id, CancellationToken cancellationToken)
         {
             return await _deleteCommentCommandHandler.Handle(new DeleteCommentCommand { Id = id }, cancellationToken);

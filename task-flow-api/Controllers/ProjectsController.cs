@@ -1,4 +1,5 @@
 ﻿using Application.Features.ProjectManagement.Projects.Commands.AddPoject;
+using Application.Enums;
 using Application.Features.ProjectManagement.Projects.Commands.DeleteProject;
 using Application.Features.ProjectManagement.Projects.Commands.UpdateProject;
 using Application.Features.ProjectManagement.Projects.Queries.GetAllProjects;
@@ -42,21 +43,21 @@ namespace task_flow_api.Controllers
             return await _getAllProjectsQueryHandler.Handle(query, cancellationToken);
         }
 
-        [Authorize(Roles = "Admin,ProjectManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.ProjectManager))]
         [HttpPost]
         public async Task<int> CreateProject([FromBody] AddProjectCommand command, CancellationToken cancellationToken)
         {
             return await _addProjectCommandHandler.Handle(command, cancellationToken);
         }
 
-        [Authorize(Roles = "Admin,ProjectManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.ProjectManager))]
         [HttpPut]
         public async Task<bool> UpdateProject([FromBody] UpdateProjectCommand command, CancellationToken cancellationToken)
         {
             return await _updateProjectCommandHandler.Handle(command, cancellationToken);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = nameof(RoleEnum.Admin))]
         [HttpDelete("{id}")]
         public async Task<bool> DeleteProject(int id, CancellationToken cancellationToken)
         {

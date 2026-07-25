@@ -1,4 +1,5 @@
 ﻿using Application.Features.ProjectManagement.Tasks.Commands.AddTask;
+using Application.Enums;
 using Application.Features.ProjectManagement.Tasks.Commands.ChangeTaskStatus;
 using Application.Features.ProjectManagement.Tasks.Commands.DeleteTask;
 using Application.Features.ProjectManagement.Tasks.Commands.UpdateTask;
@@ -55,21 +56,21 @@ namespace task_flow_api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,TaskManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.TaskManager))]
         public async Task<int> CreateTask([FromBody] AddTaskCommand command, CancellationToken cancellationToken)
         {
             return await _addTaskCommandHandler.Handle(command, cancellationToken);
         }
 
         [HttpPut]
-        [Authorize(Roles = "Admin,TaskManager")]
+        [Authorize(Roles = nameof(RoleEnum.Admin) + "," + nameof(RoleEnum.TaskManager))]
         public async Task<bool> UpdateTask([FromBody] UpdateTaskCommand command, CancellationToken cancellationToken)
         {
             return await _updateTaskCommandHandler.Handle(command, cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = nameof(RoleEnum.Admin))]
         public async Task<bool> DeleteTask(int id, CancellationToken cancellationToken)
         {
             return await _deleteTaskCommandHandler.Handle(new DeleteTaskCommand { Id = id }, cancellationToken);

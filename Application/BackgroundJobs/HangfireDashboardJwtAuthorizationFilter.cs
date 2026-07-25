@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Application.Enums;
 using Application.Settings;
 using System.Text;
 using Hangfire.Annotations;
@@ -72,7 +73,7 @@ namespace Application.BackgroundJobs
                     .Where(c => c.Type == ClaimTypes.Role)
                     .Select(c => c.Value);
 
-                return roles.Contains("Admin");
+                return roles.Contains(nameof(RoleEnum.Admin));
             }
             catch
             {

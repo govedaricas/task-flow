@@ -1,4 +1,5 @@
 ﻿using Application.Abstraction;
+using Application.Enums;
 using Application.Exceptions;
 using Application.Interfaces;
 using Domain.Entities;
@@ -8,9 +9,6 @@ namespace Application.Features.Administration.Auth.Register
 {
     public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, int>
     {
-        private const string DefaultRoleName = "Admin";
-        private const int DefaultProjectId = 1;
-
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITaskFlowDbContext _dbContext;
 
@@ -31,15 +29,15 @@ namespace Application.Features.Administration.Auth.Register
             }
 
             var adminRole = await _dbContext.Roles
-                .FirstOrDefaultAsync(x => x.Name == DefaultRoleName, cancellationToken)
-                ?? throw new NotFoundException("Role", $"Role '{DefaultRoleName}' not found.");
+                .FirstOrDefaultAsync(x => x.Id == (int)RoleEnum.Admin, cancellationToken)
+                ?? throw new NotFoundException("Role", $"Default role not found.");
 
             var defaultProjectExists = await _dbContext.Projects
-                .AnyAsync(x => x.Id == DefaultProjectId, cancellationToken);
+                .AnyAsync(x => x.Id == (int)DefaultProjectEnum.Default, cancellationToken);
 
             if (!defaultProjectExists)
             {
-                throw new NotFoundException("Project", $"Default project with id {DefaultProjectId} not found.");
+                throw new NotFoundException("Project", $"Default project with id {(int)DefaultProjectEnum.Default} not found.");
             }
 
             var user = new User
@@ -53,7 +51,7 @@ namespace Application.Features.Administration.Auth.Register
             };
 
             user.Roles.Add(adminRole);
-            user.ProjectMembers.Add(new ProjectMember { ProjectId = DefaultProjectId });
+            user.ProjectMembers.Add(new ProjectMember { ProjectId = (int)DefaultProjectEnum.Default });
 
             await _dbContext.Users.AddAsync(user, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);

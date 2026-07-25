@@ -1,4 +1,5 @@
 ﻿using Application.Features.Administration.Users.Commands;
+using Application.Enums;
 using Application.Features.Administration.Users.GetUserById;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace task_flow_api.Controllers
             return result;
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = nameof(RoleEnum.Admin))]
         [HttpPut()]
         public async Task<bool> UpdateUser([FromBody] UpdateUserCommand command, CancellationToken cancellationToken)
         {
